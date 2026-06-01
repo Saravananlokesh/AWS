@@ -1,0 +1,69 @@
+smahal430@APAC-C3XXD14:~/aws_key$ chmod 600 Mariadb_testing.pem
+smahal430@APAC-C3XXD14:~/aws_key$ ssh -i "Mariadb_testing.pem" ec2-user@ec2-13-126-105-14.ap-south-1.compute.amazonaws.com
+The authenticity of host 'ec2-13-126-105-14.ap-south-1.compute.amazonaws.com (13.126.105.14)' can't be established.
+ED25519 key fingerprint is SHA256:pQCYcg9Ld/B0/gtl8W16ZBSdiOQ/mgzBx+rtdN/LBOo.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'ec2-13-126-105-14.ap-south-1.compute.amazonaws.com' (ED25519) to the list of known hosts.
+Warning: No xauth data; using fake authentication data for X11 forwarding.
+X11 forwarding request failed on channel 0
+Register this system with Red Hat Insights: rhc connect
+
+Example:
+# rhc connect --activation-key <key> --organization <org>
+
+The rhc client and Red Hat Insights will enable analytics and additional
+management capabilities on your system.
+View your connected systems at https://console.redhat.com/insights
+
+You can learn more about how to register your system
+using rhc at https://red.ht/registration
+[ec2-user@ip-172-31-33-38 ~]$ sudo su -
+[root@ip-172-31-33-38 ~]# lsblk
+NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+nvme1n1     259:0    0  100G  0 disk
+nvme0n1     259:1    0   40G  0 disk
+├─nvme0n1p1 259:2    0    1M  0 part
+├─nvme0n1p2 259:3    0  200M  0 part /boot/efi
+├─nvme0n1p3 259:4    0    1G  0 part /boot
+└─nvme0n1p4 259:5    0 38.8G  0 part /
+[root@ip-172-31-33-38 ~]# file -s /dev/nvme1n1
+/dev/nvme1n1: data
+[root@ip-172-31-33-38 ~]# mkfs -t xfs /dev/nvme1n1
+meta-data=/dev/nvme1n1           isize=512    agcount=16, agsize=1638400 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=1        finobt=1, sparse=1, rmapbt=0
+         =                       reflink=1    bigtime=1 inobtcount=1 nrext64=0
+data     =                       bsize=4096   blocks=26214400, imaxpct=25
+         =                       sunit=1      swidth=1 blks
+naming   =version 2              bsize=4096   ascii-ci=0, ftype=1
+log      =internal log           bsize=4096   blocks=16384, version=2
+         =                       sectsz=512   sunit=1 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+[root@ip-172-31-33-38 ~]# file -s /dev/nvme1n1
+/dev/nvme1n1: SGI XFS filesystem data (blksz 4096, inosz 512, v2 dirs)
+[root@ip-172-31-33-38 ~]# mkdir -p /data
+[root@ip-172-31-33-38 ~]# mount /dev/nvme1n1 /data
+[root@ip-172-31-33-38 ~]# ls
+[root@ip-172-31-33-38 ~]# df -h
+Filesystem      Size  Used Avail Use% Mounted on
+devtmpfs        4.0M     0  4.0M   0% /dev
+tmpfs           7.6G     0  7.6G   0% /dev/shm
+tmpfs           3.1G  8.6M  3.1G   1% /run
+efivarfs        128K  3.4K  120K   3% /sys/firmware/efi/efivars
+/dev/nvme0n1p4   39G  2.0G   37G   6% /
+/dev/nvme0n1p3  960M  189M  772M  20% /boot
+/dev/nvme0n1p2  200M  7.4M  193M   4% /boot/efi
+tmpfs           1.6G     0  1.6G   0% /run/user/1000
+/dev/nvme1n1    100G  747M  100G   1% /data
+[root@ip-172-31-33-38 ~]# blkid /dev/nvme1n1
+/dev/nvme1n1: UUID="40b10ddc-c19f-4735-9604-b039b2fec1a7" TYPE="xfs"
+[root@ip-172-31-33-38 ~]# echo "UUID=$(blkid -s UUID -o value /dev/nvme1n1)  /data  xfs  defaults,nofail  0  2" >> /etc/fstab
+[root@ip-172-31-33-38 ~]# umount /data
+[root@ip-172-31-33-38 ~]# mount -a
+mount: (hint) your fstab has been modified, but systemd still uses
+       the old version; use 'systemctl daemon-reload' to reload.
+[root@ip-172-31-33-38 ~]# df -h /data
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme1n1    100G  747M  100G   1% /data
+[root@ip-172-31-33-38 ~]#
